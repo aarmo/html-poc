@@ -1,0 +1,123 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Custom Vision - Prototype</title>	
+	
+	<style>
+	input {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		background-color: #D8ADDD; /* Pink */
+		border: none;
+		color: white;
+		padding: 15px 32px;
+		text-align: center;
+		display: inline-block;
+		font-size: 16px;
+	}
+	</style>
+	
+	<script>
+	
+	function sendPic() {
+		var myInput = document.getElementById('myPhoto');
+		var myOutput = document.getElementById('myOutput');
+		var myProgress = document.getElementById('myProgress');
+		var myUpload = document.getElementById('myUpload');
+		var file = myInput.files[0];
+		
+		myOutput.innerHTML = '';
+		myUpload.style.display = "none";
+		myProgress.style.display = "block";
+
+		var request = new XMLHttpRequest();
+		
+		// Note: using the default iteration. Not storing the image for further training. Application: html-test		
+		request.open("POST", "https://southcentralus.api.cognitive.microsoft.com/customvision/v1.1/Prediction/49c18099-da9f-4f9b-9c41-ea48a65027d2/image/nostore?application=html-test");
+		request.setRequestHeader("Prediction-Key", "ed54ec99e7d544cd9075ae22125882ea");
+		request.setRequestHeader("Content-Type", "application/octet-stream");
+		
+		request.onreadystatechange = function() {
+			if (request.readyState == XMLHttpRequest.DONE)
+			{
+				if (request.status == 200) {
+					// TODO: Process results here. Show pretty JSON for now:
+					var jsonString = request.responseText;				
+					myOutput.innerHTML = JSON.stringify(JSON.parse(jsonString),null,2);
+				}
+				else
+				{
+					myOutput.innerHTML = [
+						'<p style="color: red">Status = ',
+						request.status,
+						'&nbsp;',
+						request.statusText,
+						'</p>',
+						'<pre>',
+						request.responseText,
+						'</pre>'].join('');
+				}
+				
+				myProgress.style.display = "none";
+			}
+		}
+		
+		request.send(file);
+	}
+	
+	function previewPic() {
+		var myInput = document.getElementById('myPhoto');
+		var myOutput = document.getElementById('myOutput');
+		var myPreview = document.getElementById('myPreview');
+		var myProgress = document.getElementById('myProgress');
+		var myUpload = document.getElementById('myUpload');
+		var file = myInput.files[0];
+
+		myOutput.innerHTML = '';
+		myPreview.innerHTML = '';
+		
+		var reader = new FileReader();
+
+		reader.onload = (function(theFile) {
+			return function(e) {
+				if (!e.target.result) return;
+				// Render thumbnail
+				myPreview.innerHTML = [
+					'<img style="height: 150px; margin: 10px" src="', 
+					e.target.result,
+					'" title="', escape(theFile.name), 
+					'"/>'
+					].join('');
+					
+				myUpload.style.display = "block";
+			};
+		})(file);
+
+		reader.readAsDataURL(file);
+	  }
+
+	
+	</script>
+</head>
+<body>
+	<form>
+		<h1>Custom Vision - Prediction Protoype</h1>
+		<p>This is a prototype web app for:<br/><a href="https://docs.microsoft.com/en-gb/azure/cognitive-services/Custom-Vision-Service/home"><img src="https://apimgmtstpexfdxg3jh8cunj.blob.core.windows.net/content/MediaLibrary/images/favicon.ico"> Microsoft Azure's Custom Vision Service</a> <a href="https://southcentralus.dev.cognitive.microsoft.com/docs/services/57982f59b5964e36841e22dfbfe78fc1/operations/5a3044f608fa5e06b890f166">API v1.1</a></p>
+		
+		<img style="height: 100px;" src="https://overview.azureedge.net/cdn/Azure%20Cognitive%20Services.png" alt="custom-vision-service"><br/>
+		<b><a href="https://customvision.ai/projects">Project: KnickKnacksTrial</a></b><br/>"A trial with some items found on Aaron's Desk!"<br/>
+		<br/>
+		<h3>Take a photo or select an image:</h3>		
+		<p><input id="myPhoto" type="file" accept="image/*" capture="environment" onchange="previewPic();" /></p>
+		
+		<div id="myPreview"></div>
+		
+		<p><input id="myUpload" style="display: none;" type="button" value="Upload" onclick="sendPic();"/></p>
+		
+		<span id="myProgress" style="display: none;"><img style="width:80px" src="Wedges-6s-100px.svg" alt="Uploading..."><br/>Uploading...</span>		
+		
+		<h3>Prediction Result:</h3>
+		<pre id="myOutput" />
+		
+	</form>
+</body>
