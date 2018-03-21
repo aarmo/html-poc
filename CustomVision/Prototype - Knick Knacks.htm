@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
 	<meta charset="UTF-8">
 	<title>Custom Vision - Prototype</title>	
@@ -18,13 +18,17 @@
 	</style>
 	
 	<script>
+	// Resize the image from the camera and store it as a Data Url
+	var dataUrl = '';
 	
 	function sendPic() {
 		var myInput = document.getElementById('myPhoto');
 		var myOutput = document.getElementById('myOutput');
 		var myProgress = document.getElementById('myProgress');
 		var myUpload = document.getElementById('myUpload');
-		var file = myInput.files[0];
+		
+		//Original File: var file = myInput.files[0];
+		var file = dataURLToBlob(dataUrl);
 		
 		myOutput.innerHTML = '';
 		myUpload.style.display = "none";
@@ -41,9 +45,22 @@
 			if (request.readyState == XMLHttpRequest.DONE)
 			{
 				if (request.status == 200) {
-					// TODO: Process results here. Show pretty JSON for now:
+					
 					var jsonString = request.responseText;				
-					myOutput.innerHTML = JSON.stringify(JSON.parse(jsonString),null,2);
+					
+					// Show the first 3 results:
+					var results = JSON.parse(jsonString);
+					
+					for (var i = 0; i < 3 && i < results.Predictions.length; i++)
+					{
+						var result = results.Predictions[i];
+						myOutput.innerHTML = myOutput.innerHTML + [
+							result.Tag,
+							' (',
+							parseFloat(result.Probability*100).toFixed(2),
+							'%)<br/>',
+							].join('');
+					}					
 				}
 				else
 				{
@@ -78,24 +95,70 @@
 		
 		var reader = new FileReader();
 
-		reader.onload = (function(theFile) {
-			return function(e) {
-				if (!e.target.result) return;
+		reader.onload = function (readerEvent) {		
+			if (!readerEvent.target.result) return;
+			
+			var image = new Image();
+			image.onload = function (imageEvent) {
+
+				// Resize the image using a canvas
+				var canvas = document.createElement('canvas'),
+					max_size = 300,
+					width = image.width,
+					height = image.height;
+				if (width > height) {
+					if (width > max_size) {
+						height *= max_size / width;
+						width = max_size;
+					}
+				} else {
+					if (height > max_size) {
+						width *= max_size / height;
+						height = max_size;
+					}
+				}
+				canvas.width = width;
+				canvas.height = height;
+				canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+				dataUrl = canvas.toDataURL('image/jpeg');
+				
 				// Render thumbnail
 				myPreview.innerHTML = [
-					'<img style="height: 150px; margin: 10px" src="', 
-					e.target.result,
-					'" title="', escape(theFile.name), 
+					'<img style="height: 300px; margin: 10px" src="', 
+					dataUrl,
+					'" title="', escape(readerEvent.name), 
 					'"/>'
 					].join('');
-					
-				myUpload.style.display = "block";
-			};
-		})(file);
+			}
+			image.src = readerEvent.target.result;			
+			myUpload.style.display = "block";
+		}
+		reader.readAsDataURL(file);		
+	}
 
-		reader.readAsDataURL(file);
-	  }
+	function dataURLToBlob(dataURL) {		
+		var BASE64_MARKER = ';base64,';
+		if (dataURL.indexOf(BASE64_MARKER) == -1) {
+			var parts = dataURL.split(',');
+			var contentType = parts[0].split(':')[1];
+			var raw = parts[1];
 
+			return new Blob([raw], {type: contentType});
+		}
+
+		var parts = dataURL.split(BASE64_MARKER);
+		var contentType = parts[0].split(':')[1];
+		var raw = window.atob(parts[1]);
+		var rawLength = raw.length;
+
+		var uInt8Array = new Uint8Array(rawLength);
+
+		for (var i = 0; i < rawLength; ++i) {
+			uInt8Array[i] = raw.charCodeAt(i);
+		}
+
+		return new Blob([uInt8Array], {type: contentType});
+	}
 	
 	</script>
 </head>
