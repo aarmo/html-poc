@@ -1,25 +1,17 @@
 ﻿<html>
 <head>
 	<meta charset="UTF-8">
-	<title>Custom Vision - Prototype</title>	
-	
-	<style>
-	input {
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		background-color: #D8ADDD; /* Pink */
-		border: none;
-		color: white;
-		padding: 15px 32px;
-		text-align: center;
-		display: inline-block;
-		font-size: 16px;
-	}
-	</style>
+	<title>Custom Vision - Prototype</title>
+	<link rel="stylesheet" href="demo.css"/>
+    <script type="text/javascript" src="utilities.js"></script>
 	
 	<script>
 	// Resize the image from the camera and store it as a Data Url
 	var dataUrl = '';
+	
+	var projectId = '49c18099-da9f-4f9b-9c41-ea48a65027d2';	
+	var prediction_ApiKey = 'ed54ec99e7d544cd9075ae22125882ea';
+	var prediction_BaseUrl = 'https://southcentralus.api.cognitive.microsoft.com/customvision/v1.1/Prediction/';
 	
 	function sendPic() {
 		var myInput = document.getElementById('myPhoto');
@@ -36,9 +28,9 @@
 
 		var request = new XMLHttpRequest();
 		
-		// Note: using the default iteration. Not storing the image for further training. Application: html-test		
-		request.open("POST", "https://southcentralus.api.cognitive.microsoft.com/customvision/v1.1/Prediction/49c18099-da9f-4f9b-9c41-ea48a65027d2/image/nostore?application=html-test");
-		request.setRequestHeader("Prediction-Key", "ed54ec99e7d544cd9075ae22125882ea");
+		// Note: using the default iteration. Not storing the image for further training:		
+		request.open("POST", prediction_BaseUrl + projectId + "/image/nostore?application=html-test");
+		request.setRequestHeader("Prediction-Key", prediction_ApiKey);
 		request.setRequestHeader("Content-Type", "application/octet-stream");
 		
 		request.onreadystatechange = function() {
@@ -86,7 +78,6 @@
 		var myInput = document.getElementById('myPhoto');
 		var myOutput = document.getElementById('myOutput');
 		var myPreview = document.getElementById('myPreview');
-		var myProgress = document.getElementById('myProgress');
 		var myUpload = document.getElementById('myUpload');
 		var file = myInput.files[0];
 
@@ -135,31 +126,6 @@
 		}
 		reader.readAsDataURL(file);		
 	}
-
-	function dataURLToBlob(dataURL) {		
-		var BASE64_MARKER = ';base64,';
-		if (dataURL.indexOf(BASE64_MARKER) == -1) {
-			var parts = dataURL.split(',');
-			var contentType = parts[0].split(':')[1];
-			var raw = parts[1];
-
-			return new Blob([raw], {type: contentType});
-		}
-
-		var parts = dataURL.split(BASE64_MARKER);
-		var contentType = parts[0].split(':')[1];
-		var raw = window.atob(parts[1]);
-		var rawLength = raw.length;
-
-		var uInt8Array = new Uint8Array(rawLength);
-
-		for (var i = 0; i < rawLength; ++i) {
-			uInt8Array[i] = raw.charCodeAt(i);
-		}
-
-		return new Blob([uInt8Array], {type: contentType});
-	}
-	
 	</script>
 </head>
 <body>

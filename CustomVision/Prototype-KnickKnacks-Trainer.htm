@@ -1,0 +1,301 @@
+﻿<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Custom Vision - Prototype Trainer</title>
+	<link rel="stylesheet" href="demo.css"/>
+    <script type="text/javascript" src="utilities.js"></script>
+	
+	<script>
+	// Resize the image from the camera and store it as a Data Url in this array
+	var dataURLs = [];
+		
+	var projectId = '49c18099-da9f-4f9b-9c41-ea48a65027d2';	
+	var training_ApiKey = 'ea28799d31f24f67b7dec55ec465aa50';
+	var training_BaseUrl = 'https://southcentralus.api.cognitive.microsoft.com/customvision/v1.2/Training/projects/';
+	
+	var tags = null;
+	var tagGuid = '';
+	var imagesUploaded = false;
+	
+	function logError(request)
+	{
+		myOutput.innerHTML = [
+			'<p style="color: red">Status = ',
+			request.status,
+			'&nbsp;',
+			request.statusText,
+			'</p>',
+			'<pre>',
+			request.responseText,
+			'</pre>'].join('');
+	}
+	
+	function doTraining()
+	{
+		var myOutput = document.getElementById('myOutput');
+		
+		console.log("Running training...");
+		
+		var request = new XMLHttpRequest();
+		var url = training_BaseUrl + projectId + "/train";
+		
+		request.open("POST", url);
+		request.setRequestHeader("Training-Key", training_ApiKey);
+		request.onreadystatechange = function() {
+			if (request.readyState == XMLHttpRequest.DONE)
+			{
+				if (request.status == 200) {
+					
+					// TODO: Process results here. Show pretty JSON for now:
+					var jsonString = request.responseText;				
+					myOutput.innerHTML = JSON.stringify(JSON.parse(jsonString),null,2);
+				}
+				else
+				{
+					logError(request);
+				}
+			}
+		};
+		request.send();
+	}
+	
+	function getTags()
+	{
+		var request = new XMLHttpRequest();
+		var url = training_BaseUrl + projectId + "/tags";
+		var myUpload = document.getElementById('myUpload');
+		
+		console.log("Getting tags...");
+		
+		request.open("GET", url);
+		request.setRequestHeader("Training-Key", training_ApiKey);
+		request.onreadystatechange = function() {
+			if (request.readyState == XMLHttpRequest.DONE)
+			{
+				if (request.status == 200) {
+					var jsonString = request.responseText;
+					tags = JSON.parse(jsonString);
+					console.log("Got tags!");
+					searchForTag();
+					
+					myUpload.style.display = "block";
+					return true;
+				}
+				else
+				{
+					logError(request);
+					return false;
+				}
+			}
+		};
+		request.send();		
+	}
+	
+	function searchForTag() {
+		if (!tags == null) return false;
+				
+		var myTagID = document.getElementById('myTagID');
+		tagGuid = '';
+				
+		console.log("Searching tags...");
+		
+		for (var i = 0; i < tags.Tags.length; i++)
+		{
+			if (tags.Tags[i].Name.toLowerCase() == myTagID.value.toLowerCase())
+			{			
+				console.log("Found tag!");
+				tagGuid = tags.Tags[i].Id;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function createTag() {		
+	
+		var myTagID = document.getElementById('myTagID');
+		var request = new XMLHttpRequest();
+		var url = training_BaseUrl + projectId + "/tags?name=" + myTagID.value;
+				
+		console.log("Creating tag...");
+		
+		// Note: using the default iteration. Not storing the image for further training. Application: html-test		
+		request.open("POST", url);
+		request.setRequestHeader("Training-Key", training_ApiKey);
+		
+		request.onreadystatechange = function() {
+			if (request.readyState == XMLHttpRequest.DONE)
+			{
+				if (request.status == 200) {
+					var jsonString = request.responseText;
+					var results = JSON.parse(jsonString);
+					
+					tagGuid = results.Id;
+					sendTrainingPics(0);
+					return true;
+				}
+				else
+				{
+					logError(request);
+					return false;
+				}
+			}
+		};
+		request.send();	
+	}
+	
+	function sendTrainingPics(index) {
+		var myInput = document.getElementById('myPhoto');
+		var myOutput = document.getElementById('myOutput');
+		var myProgress = document.getElementById('myProgress');
+		var myUpload = document.getElementById('myUpload');
+		
+		if (index > dataURLs.length || dataURLs[index] == null) return;
+		
+		// We need to find or create the Tag ID for the entered tag name (SKU)...
+		if (tagGuid == '')
+		{
+			createTag();
+			return false;
+		}
+		
+		console.log("Uploading image...");
+		
+		var file = dataURLToBlob(dataURLs[index]);
+		
+		myOutput.innerHTML = '';
+		myUpload.style.display = "none";
+		myProgress.style.display = "block";
+
+		var request = new XMLHttpRequest();
+		var url = training_BaseUrl + projectId + "/images?tagIds=" + tagGuid
+					
+		request.open("POST", url);
+		request.setRequestHeader("Training-Key", training_ApiKey);
+		request.setRequestHeader("Content-Type", "application/octet-stream");
+		
+		request.onreadystatechange = function() {
+			if (request.readyState == XMLHttpRequest.DONE)
+			{
+				if (request.status == 200) {
+					
+					// TODO: Process results here. Show pretty JSON for now:
+					var jsonString = request.responseText;				
+					myOutput.innerHTML = JSON.stringify(JSON.parse(jsonString),null,2);
+					
+					// Upload the next image...
+					if (index < dataURLs.length) sendTrainingPics(index+1);
+				}
+				else
+				{
+					logError(request);
+				}
+				
+				myProgress.style.display = "none";
+				imagesUploaded = true;
+			}
+		}
+		
+		request.send(file);
+	}
+	
+	function previewPic() {
+		var myInput = document.getElementById('myPhoto');
+		var myOutput = document.getElementById('myOutput');
+		var myPreview = document.getElementById('myPreview');
+		var myTag = document.getElementById('myTag');
+		var myTagID = document.getElementById('myTagID');
+		var file = myInput.files[0];
+
+		myOutput.innerHTML = '';
+		if (imagesUploaded) 
+		{
+			myPreview.innerHTML = '';
+			myTagID.value = '';
+			myTag.style.display = "none";
+			dataURLs.length = 0;
+			imagesUploaded = false;
+		}
+		
+		var reader = new FileReader();
+
+		reader.onload = function (readerEvent) {		
+			if (!readerEvent.target.result) return;
+			
+			var image = new Image();
+			image.onload = function (imageEvent) {
+
+				// Resize the image using a canvas
+				var canvas = document.createElement('canvas'),
+					max_size = 300,
+					width = image.width,
+					height = image.height;
+				if (width > height) {
+					if (width > max_size) {
+						height *= max_size / width;
+						width = max_size;
+					}
+				} else {
+					if (height > max_size) {
+						width *= max_size / height;
+						height = max_size;
+					}
+				}
+				canvas.width = width;
+				canvas.height = height;
+				canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+				
+				// Add it to the array
+				var dataUrl = canvas.toDataURL('image/jpeg');
+				dataURLs.push(dataUrl);
+				
+				// Render thumbnail
+				myPreview.innerHTML = myPreview.innerHTML + [
+					'<img style="height: 300px; margin: 10px" src="', 
+					dataUrl,
+					'" title="', escape(file.name), 
+					'"/>'
+					].join('');
+			}
+			image.src = readerEvent.target.result;
+			myTag.style.display = "block";
+		}
+		reader.readAsDataURL(file);		
+	}
+
+	function enterTag() {		
+		getTags();
+	}
+	
+	</script>
+</head>
+<body>
+	<form>
+		<h1>Custom Vision - Training Protoype</h1>
+		<p>This is a prototype web app for:<br/><a href="https://docs.microsoft.com/en-gb/azure/cognitive-services/Custom-Vision-Service/home"><img src="https://apimgmtstpexfdxg3jh8cunj.blob.core.windows.net/content/MediaLibrary/images/favicon.ico"> Microsoft Azure's Custom Vision Service</a> <a href="https://southcentralus.dev.cognitive.microsoft.com/docs/services/57982f59b5964e36841e22dfbfe78fc1/operations/5a3044f608fa5e06b890f166">API v1.1</a></p>
+		
+		<img style="height: 100px;" src="https://overview.azureedge.net/cdn/Azure%20Cognitive%20Services.png" alt="custom-vision-service"><br/>
+		<b><a href="https://customvision.ai/projects">Project: KnickKnacksTrial</a></b><br/>"A trial with some items found on Aaron's Desk!"<br/>
+		<br/>
+		<h3>Take a photo or select an image:</h3>		
+		<p><input id="myPhoto" type="file" accept="image/*" capture="environment" onchange="previewPic();" /></p>
+		
+		<div id="myPreview"></div>
+		
+		<span id="myTag" style="display: none;">
+		<h3>Enter the ID of this product:</h3>		
+		<p><input id="myTagID" type="text" onchange="enterTag();"/></p>
+		</span>
+		
+		<p><input id="myUpload" style="display: none;" type="button" value="Upload" onclick="sendTrainingPics(0);"/></p>
+		
+		<span id="myProgress" style="display: none;"><img style="width:80px" src="Wedges-6s-100px.svg" alt="Uploading..."><br/>Uploading...</span>		
+				
+		<h3>Perform training:</h3>	
+		<p><input id="myTraining" type="button" value="Run Training" onclick="doTraining();"/></p>
+		
+		<h3>Upload / Training Results:</h3>
+		<pre id="myOutput"></pre>
+		
+	</form>
+</body>
