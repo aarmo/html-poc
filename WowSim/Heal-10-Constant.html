@@ -1,0 +1,444 @@
+<html>
+    <head>
+        <title>
+            WoW Healing Simulator
+        </title>
+        <style>
+            .lines {
+                width: 100%;
+				text-align: center;
+                display: block;
+				margin-left: auto;
+				margin-right: auto;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+			.buttonLine {
+				width: 100%;
+				text-align: center;
+                display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+            .mana {
+                padding: 5px;
+				text-align: center;
+                width: 90%;
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+                border: 2px black solid;
+				border-radius: 5px;
+                margin-top: 5px;
+                color: white;
+            }
+            #mana {
+                background-color: #000092;
+            }
+			.button {
+                width: 64px;
+				text-align: center;
+				margin-left: auto;
+				margin-right: auto;
+				display:inline-block;
+				border: 1px solid grey;
+				border-radius: 5px;
+                padding: 5px;
+                margin-bottom: 25px;
+			}
+			.button img {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			.button .label {
+				font-size:10pt;				
+			}
+            .players {
+                width: 100px;
+                display: inline-block;
+                padding: 5px;
+				
+				border: 1px solid grey;
+				border-radius: 5px;
+				text-align: center;
+				
+				cursor: default;
+				-webkit-touch-callout: none;
+				-webkit-user-select: none;
+				-khtml-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+
+            }
+			#finalPopup {
+                display: none;
+                padding: 20px;
+                background-color: whitesmoke;
+                position: absolute;
+                width: 90%;
+				margin-left: auto;
+				margin-right: auto;
+                border: 2px black solid;
+				border-radius: 20px;
+                margin-top: 5px;
+				text-align: center;
+                font-size: 50pt;
+            }
+			.classColour {
+				border: 1px solid grey;
+                width: 100%;
+				padding: 10px 0;
+			}
+			.classColour div {
+				font-size:10px
+			}
+            .deathknight{
+                background-color: #C41F3B;
+            }
+            .demonhunter{
+                background-color: #A330C9;
+            }
+            .druid{
+                background-color: #FF7D0A;
+            }
+            .hunter{
+                background-color: #ABD473;
+            }
+            .mage{
+                background-color: #40C7EB;
+            }
+            .monk{
+                background-color: #00FF96;
+            }
+            .paladin{
+                background-color: #F58CBA;
+            }
+            .priest{
+                background-color: #FAFAFA;
+            }
+            .rogue{
+                background-color: #FFF569;
+            }
+            .shaman{
+                background-color: #0070DE;
+            }
+            .warlock{
+                background-color: #8787ED;
+            }
+            .warrior{
+                background-color: #C79C6E;
+            }
+
+        </style>
+    </head>
+    <body onclick="healClick(rnd(minHeal,maxHeal))">
+		<h1>WoW Healing Simulator</h1>
+		10 man, constant damage
+        <div>
+            <!-- TODO: just random dots moving around -->
+        </div>
+		
+		<div id="finalPopup" >
+			<div id="finalMessage"></div>
+			<button onclick="location.reload()">Play again</button>
+		</div>
+
+        <div>			
+            <!-- healer UI -->
+			<div class="buttonLine">
+				<div class="button">
+					<img src="https://imageog.flaticon.com/icons/png/512/456/456220.png?size=64x64&pad=10,10,10,10&ext=png&bg=FFFFFFFF" height="32px" alt="mouse1"/>
+					<img src="https://wow.zamimg.com/images/wow/icons/large/spell_holy_flashheal.jpg" alt="flash heal"/>
+					<div style="label" id="spell1">FLASH</div>
+				</div>
+				<div class="button">
+					<img src="https://imageog.flaticon.com/icons/png/512/565/565860.png?size=64x64&pad=10,10,10,10&ext=png&bg=FFFFFFFF" height="32px" alt="1"/>
+					<img src="https://wow.zamimg.com/images/wow/icons/large/spell_holy_persuitofjustice.jpg" alt="persuit of justice"/>
+					<div style="label" id="spell2">POJ</div>
+				</div>
+				<div class="button">
+					<img src="https://imageog.flaticon.com/icons/png/512/565/565861.png?size=64x64&pad=10,10,10,10&ext=png&bg=FFFFFFFF" height="32px" alt="2"/>
+					<img src="https://wow.zamimg.com/images/wow/icons/large/spell_holy_prayerofhealing02.jpg" alt="prayer of healing"/>
+					<div style="label" id="spell3">POH</div>
+				</div>
+				
+            </div>
+			
+            <div class="lines">
+                <div class="players" onmouseover="selectTarget('hp1')" onkeydown="healKey(event)">                        
+                    <div class="classColour warrior" id="hp1">
+                        TANK
+						<div id="lbl1">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp2')" onkeydown="healKey(event)">                        
+                    <div class="classColour druid" id="hp2">
+                        TANK
+						<div id="lbl2">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp3')" onkeydown="healKey(event)">
+                    <div class="classColour monk" id="hp3">
+						MONK
+						<div id="lbl3">&nbsp;</div>
+					</div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp4')" onkeydown="healKey(event)">                        
+                    <div class="classColour rogue" id="hp4">
+						ROGUE
+						<div id="lbl4">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp5')" onkeydown="healKey(event)">                        
+                    <div class="classColour paladin" id="hp5">
+						PALADIN
+						<div id="lbl5">&nbsp;</div>
+                    </div>
+                </div>
+			</div>			
+            <div class="lines">
+                <div class="players" onmouseover="selectTarget('hp6')" onkeydown="healKey(event)">
+                    <div class="classColour warlock" id="hp6">
+						WARLOCK
+						<div id="lbl6">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp7')" onkeydown="healKey(event)">
+                    <div class="classColour hunter" id="hp7">
+						HUNTER
+						<div id="lbl7">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp8')" onkeydown="healKey(event)">
+                    <div class="classColour mage" id="hp8">
+						MAGE
+						<div id="lbl8">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="players" onmouseover="selectTarget('hp9')" onkeydown="healKey(event)">
+                    <div class="classColour shaman" id="hp9">
+						SHAMAN
+						<div id="lbl9">&nbsp;</div>
+                    </div>
+                </div>
+				
+                <div class="players" onmouseover="selectTarget('hp10')" onkeydown="healKey(event)">
+                    <div class="classColour priest" id="hp10">
+						HEALER
+						<div id="lbl10">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+            
+            <br/>
+			<div class="mana" >
+				<div id="mana"> 
+					MANA					
+				</div>
+			</div>
+        </div>
+		<div class="lines" >
+			<div id="gameTime">Time: 0</div>
+			<div id="hps">HPS: 0</div>
+			<div id="dtps">DTPS: 0</div>
+		</div>
+    </body>
+    <script>
+		var numPlayers = 10;
+		var minHealth = 3;
+		var maxHealth = 100;
+		var manaRegen = 0.85;
+		var manaCost = 1.25;
+		var minHeal = 6;
+		var maxHeal = 12;
+		var minTickDamage = 2;
+		var maxTickDamage = 6;
+        var mana = 100;
+		var maxMana = 100;
+		var gcdCD = 0;
+		var spell2CD = 0;
+		var spell2MaxCD = 15;
+		
+		var gameTime = 0.0;
+		var largeHitChance = 0.005;
+		var largeHitMultiplier = 3;
+		var minGameSeconds = 180;
+		var gameOverChance = 0.005;
+		
+		var totalHealingDone = 0;
+		var totalDamageTaken = 0;
+		
+        gameOver = false;
+        postMessage = '';
+        selectedTarget = '';
+        ticks = setInterval(gametick, 500);
+		
+		document.addEventListener('keydown', function(event) {
+            x = event.code;
+			healKey(x);
+        });
+		
+        function gametick(){           
+            gameTime += 0.5;
+			document.getElementById('gameTime').innerText = "Time: " + gameTime.toFixed(2);
+			
+			if (Math.random() <= largeHitChance) {
+				damage(rnd(1, 5), rnd(minTickDamage*largeHitMultiplier, maxTickDamage*largeHitMultiplier));
+				largeHitChance += 0.005;
+			}
+			
+			if (gameTime > minGameSeconds){
+				if (Math.random() <= gameOverChance) {					
+					gameOver = true;
+					postMessage = 'SUCCESS !!';
+					clearInterval(ticks);					
+				}
+				else
+				{
+					gameOverChance += 0.0001;
+				}
+			}
+			
+			if (gcdCD > 0){
+                gcdCD -= 1;
+				
+				if (gcdCD == 0) {
+					document.getElementById('spell1').innerText = 'FLASH';
+				}
+				else {
+					document.getElementById('spell1').innerText = 'GCD';
+				}
+            }
+			
+			// hit the tanks
+			if (Math.random() <= 0.5) damage(1, rnd(minTickDamage, maxTickDamage));
+			if (Math.random() <= 0.5) damage(2, rnd(minTickDamage, maxTickDamage));
+			
+            // harass some random people
+			var hitPlayers = rnd(2, numPlayers/2-1);
+			for (var i = 0; i < hitPlayers; i++)
+			{
+				damage(rnd(1, numPlayers), rnd(minTickDamage, maxTickDamage));
+			}
+			
+            updateMana(manaRegen)	
+			
+			if (spell2CD > 0){
+                spell2CD -= 0.5;
+                document.getElementById('spell2').innerText = spell2CD.toFixed(2);
+            }
+            else{
+                document.getElementById('spell2').innerText = 'POJ';
+            }
+			
+            hpYou = document.getElementById('hp10').offsetWidth;
+            hpTank1 = document.getElementById('hp1').offsetWidth;
+            hpTank2 = document.getElementById('hp1').offsetWidth;
+            if (hpYou <= minHealth || hpTank1 <= minHealth || hpTank2 <= minHealth){
+				gameOver = true;
+                postMessage = 'WIPE IT !!';
+                clearInterval(ticks);
+            }
+            if (postMessage != ''){
+                document.getElementById('finalPopup').style.display= "block";
+                document.getElementById('finalMessage').innerText = postMessage;
+            }
+			
+            updateHPS();
+            updateDTPS();
+        }
+
+		function rnd(min, max){
+			return Math.floor(Math.random() * max) + min;
+		}		
+		
+        function selectTarget(target){
+            selectedTarget = target;
+        }
+		
+        function healClick(amount){
+			if (gcdCD > 0) return;
+			heal(selectedTarget, amount);
+        }
+		
+		function heal(target, amount){
+			if (gameOver || target == '' || mana <= 0) return;
+			
+			hp = document.getElementById(target).offsetWidth;
+			if (hp <= minHealth || hp >= maxHealth) return;
+			
+			updateMana(-manaCost);
+			hp = hp + amount;
+			if (hp > maxHealth){
+				hp = maxHealth;
+			}
+			document.getElementById(target).style.width = hp + '%';
+			totalHealingDone += amount;
+			updateHPS();
+			
+			gcdCD = 2;
+			document.getElementById('spell1').innerText = 'GCD';
+		}
+		
+		function healKey(event){2
+			if (gameOver || selectedTarget == '' || gcdCD > 0) return;
+			if (event == 'Digit1') {
+                if (spell2CD == 0){
+					healClick(rnd(30, 50));
+					spell2CD = spell2MaxCD;
+					document.getElementById('spell2').innerText = spell2CD;
+				}
+            }
+            else if (event == 'Digit2'){
+				healClick(rnd(minHeal, maxHeal));
+				updateMana(-manaCost);				
+				heal('hp' + rnd(1,numPlayers), rnd(minHeal, maxHeal));				
+				heal('hp' + rnd(1,numPlayers), rnd(minHeal, maxHeal));				
+				heal('hp' + rnd(1,numPlayers), rnd(minHeal, maxHeal));
+            }
+		}
+		
+        function damage(target, amount){
+			if (gameOver) return;
+			
+            hp = document.getElementById('hp'+target).offsetWidth;
+			if (hp <= minHealth) return;				
+            hp = hp - amount;
+			totalDamageTaken += amount;
+			
+			if (hp <= minHealth){
+				hp = 0;
+				var elem = document.getElementById('lbl'+target)
+				elem.innerText = "*DEAD*"
+			}
+			
+            document.getElementById('hp'+target).style.width = hp + '%';
+        }
+
+        function updateMana(change){  
+			if (gameOver) return;
+			
+            mana = mana + change;
+            if (mana > maxMana){
+                mana = maxMana;
+            }
+			else if (mana < 0){
+				mana = 0;
+			}
+			
+            document.getElementById('mana').style.width = mana + '%';
+        }
+		
+		function updateDTPS(){
+            DTPS = totalDamageTaken / gameTime;
+            document.getElementById('dtps').innerText = "DTPS: " + DTPS.toFixed(2);;
+        }
+		function updateHPS(){
+            HPS = totalHealingDone / gameTime;
+            document.getElementById('hps').innerText = "HPS: " + HPS.toFixed(2);;
+        }
+        
+    </script>
+</html>
