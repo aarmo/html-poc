@@ -1,0 +1,804 @@
+<html>
+    <head>
+        <title>
+            WoW Healing Simulator
+        </title>
+        <style>
+            .lines {
+                width: 100%;
+				text-align: center;
+                display: block;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+			.buttonLine {
+				width: 100%;
+				text-align: center;
+                display: block;
+                margin-bottom: 10px;
+			}
+            .mana {
+                padding: 5px;
+				text-align: center;
+                width: 90%;
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+                border: 2px black solid;
+				border-radius: 5px;
+                margin-top: 5px;
+                color: white;
+            }
+            #mana {
+                background-color: #000092;
+				transition: .25s ease;
+            }
+			.boss {
+                padding: 5px;
+				text-align: center;
+                width: 90%;
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+                border: 2px black solid;
+				border-radius: 5px;
+                margin-top: 20px;
+                color: white;
+            }
+            #hpboss {
+                background-color: red;
+				transition: .25s ease;
+            }
+			.button {
+				background: rgba(150, 150, 150, 0.8);
+				
+				color: black;
+                width: 100px;
+				text-align: center;
+				margin: 2px;
+				display:inline-block;
+				border: 1px solid grey;
+				border-radius: 5px;
+			}
+			.button img {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			.button .label {
+				font-size: x-small;
+				margin: 5px 0 5px 0;
+			}
+            .players {
+                width: 100px;
+                display: inline-block;
+                padding: 2px 4px 2px 2px;
+				color: black;
+				
+				background: rgba(150, 150, 150, 0.8);
+				border: 1px solid grey;
+				border-radius: 5px;
+				text-align: center;
+				
+				cursor: default;
+				-webkit-touch-callout: none;
+				-webkit-user-select: none;
+				-khtml-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+
+            }
+			#finalPopup {
+                display: none;
+				
+				position: absolute;
+				margin-left: auto;
+				margin-right: auto;
+				left: 0;
+				right: 0;
+				width: 80%;
+                margin-top: 75px;
+				
+				padding: 20px;
+				color: black;
+                background-color: whitesmoke;                
+                
+                border: 2px black solid;
+				border-radius: 20px;
+				text-align: center;
+                font-size: 50pt;
+            }
+			.classColour {
+				border: 1px solid grey;
+                width: 100%;
+				opacity: 1;
+			}
+			.label {
+				font-size:10px;
+			}
+			.overlay {
+				padding: 10px;
+				transition: .25s ease;
+			}
+            .deathknight{
+                background-color: #C41F3B;
+            }
+            .demonhunter{
+                background-color: #A330C9;
+            }
+            .druid{
+                background-color: #FF7D0A;
+            }
+            .hunter{
+                background-color: #ABD473;
+            }
+            .mage{
+                background-color: #40C7EB;
+            }
+            .monk{
+                background-color: #00FF96;
+            }
+            .paladin{
+                background-color: #F58CBA;
+            }
+            .priest{
+                background-color: #FAFAFA;
+            }
+            .rogue{
+                background-color: #FFF569;
+            }
+            .shaman{
+                background-color: #0070DE;
+            }
+            .warlock{
+                background-color: #8787ED;
+            }
+            .warrior{
+                background-color: #C79C6E;
+            }
+			
+			#backgroundVideo{
+				position: fixed;
+				right: 0;
+				bottom: 0;
+				min-width: 100%; 
+				min-height: 100%;
+			}
+			#gameInfo{			
+				background: rgba(150, 150, 150, 0.8);
+				padding: 20px;
+			}
+			
+			.content {
+				position: fixed;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				background: rgba(0, 0, 0, 0.25);
+				width: 100%;
+				padding: 5px;
+			}
+			.footer {
+			   position:absolute;
+			   bottom:0;
+			   width:100%;
+			}
+        </style>
+    </head>
+    <body onclick="healClick(rnd(minHeal,maxHeal))">
+				
+		<video id="backgroundVideo" loop="loop" muted="muted">
+			<source src="https://giant.gfycat.com/GregariousCommonAfghanhound.webm" type="video/webm">
+			Your browser does not support the video tag.
+		</video>
+		<div id="content" class="content">
+			<div id="gameInfo" class="lines" >
+				<h1>WoW Healing Simulator</h1>
+				<h2>10M Spike Damage</h2><br/>
+				Keep the TANKS and HEALER alive, and the DPS will kill the BOSS.<br/><br/>
+				Healer Class:
+				<select id="class">
+				  <option>PALADIN</option>
+				</select>&nbsp;
+				Difficulty:
+				<select id="difficulty" onchange="changeDifficulty();">
+				  <option value="-3">LFR</option>
+				  <option value="-2" selected>NORMAL</option>
+				  <option value="-1">HEROIC</option>
+				  <option value="0">MYTHIC</option>
+				</select>
+			</div>
+			<div class="lines">
+				<button onclick="pause()" id="pauseButton">Play</button>
+				<button onclick="location.reload()">Reset</button>
+			</div>
+			
+			<div>
+				<!-- TODO: Create movement mechanics -->			
+			</div>
+			
+			<div id="finalPopup" >
+				<div id="finalMessage"></div>
+				<button onclick="location.reload()">Play again</button>
+			</div>
+
+			<div>
+				<div class="boss" >
+					<div id="hpboss"> 
+						BOSS
+						<div id="lblboss" class="label">&nbsp;</div>			
+					</div>
+				</div>
+				<div class="footer">
+					<div class="mana">
+						<div id="mana"> 
+							MANA					
+						</div>
+					</div>
+					<br/>
+					<!-- healer UI -->
+					<div class="buttonLine">
+						<div class="button">
+							<div id="spell1overlay" class="overlay">
+							<img src="https://imageog.flaticon.com/icons/png/512/456/456220.png?size=64x64&pad=10,10,10,10&ext=png" height="32px" alt="mouse1"/>
+							<img src="https://wow.zamimg.com/images/wow/icons/medium/spell_holy_flashheal.jpg" alt="flash heal"/>					
+							<div class="label" id="spell1">FLASH OF LIGHT</div>
+							</div>
+						</div>
+						<div class="button">
+							<div id="spell2overlay" class="overlay">
+							<img id="button2" src="" height="32px" alt="1"/>
+							<img src="https://wow.zamimg.com/images/wow/icons/medium/spell_holy_searinglight.jpg"/>
+							<div class="label" id="spell2">HOLY SHOCK</div>
+							</div>
+						</div>
+						<div class="button">
+							<div id="spell3overlay" class="overlay">
+							<img id="button3" src="" height="32px" alt="2"/>
+							<img src="https://wow.zamimg.com/images/wow/icons/medium/spell_paladin_lightofdawn.jpg"/>
+							<div class="label" id="spell3">LIGHT OF DAWN</div>
+							</div>
+						</div>
+						<div class="button">
+							<div id="spell4overlay" class="overlay">
+							<img id="button4" src="" height="32px" alt="Q"/>
+							<img src="https://wow.zamimg.com/images/wow/icons/medium/spell_holy_avenginewrath.jpg"/>
+							<div class="label" id="spell4">AVENGING&nbsp;WRATH</div>
+							</div>
+						</div>
+						<div class="button">
+							<div id="spell5overlay" class="overlay">
+							<img id="button5" src="" height="32px" alt="E"/>
+							<img src="https://wow.zamimg.com/images/wow/icons/medium/spell_holy_layonhands.jpg"/>
+							<div class="label" id="spell5">LAY ON HANDS</div>
+							</div>
+						</div>
+						<div class="button">
+							<div id="spell6overlay" class="overlay">
+							<img id="button6" src="" height="32px" alt="R"/>
+							<img src="https://wow.zamimg.com/images/wow/icons/medium/spell_holy_auramastery.jpg"/>
+							<div class="label" id="spell6">AURA MASTERY</div>
+							</div>
+						</div>				
+					</div>
+					
+					<div class="lines">
+						<div class="players" onmouseover="selectTarget('hp1')" onmouseleave="unselectTarget('hp1')" onkeydown="healKey(event)">                        
+							<div class="classColour warrior" id="hp1">
+								<div id="hp1overlay" class="overlay">
+								TANK
+								<div id="lbl1" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp2')" onmouseleave="unselectTarget('hp2')" onkeydown="healKey(event)">                        
+							<div class="classColour druid" id="hp2">
+								<div id="hp2overlay" class="overlay">
+								TANK
+								<div id="lbl2" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp3')" onmouseleave="unselectTarget('hp3')" onkeydown="healKey(event)">
+							<div class="classColour monk" id="hp3">
+								<div id="hp3overlay" class="overlay">
+								MONK
+								<div id="lbl3" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp4')" onmouseleave="unselectTarget('hp4')" onkeydown="healKey(event)">                        
+							<div class="classColour rogue" id="hp4">
+								<div id="hp4overlay" class="overlay">
+								ROGUE
+								<div id="lbl4" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp5')" onmouseleave="unselectTarget('hp5')" onkeydown="healKey(event)">                        
+							<div class="classColour deathknight" id="hp5">
+								<div id="hp5overlay" class="overlay">
+								DK
+								<div id="lbl5" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+					</div>			
+					<div class="lines">
+						<div class="players" onmouseover="selectTarget('hp6')" onmouseleave="unselectTarget('hp6')" onkeydown="healKey(event)">
+							<div class="classColour warlock" id="hp6">
+								<div id="hp6overlay" class="overlay">
+								WARLOCK
+								<div id="lbl6" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp7')" onmouseleave="unselectTarget('hp7')" onkeydown="healKey(event)">
+							<div class="classColour hunter" id="hp7">
+								<div id="hp7overlay" class="overlay">
+								HUNTER
+								<div id="lbl7" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp8')" onmouseleave="unselectTarget('hp8')" onkeydown="healKey(event)">
+							<div class="classColour mage" id="hp8">
+								<div id="hp8overlay" class="overlay">
+								MAGE
+								<div id="lbl8" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						<div class="players" onmouseover="selectTarget('hp9')" onmouseleave="unselectTarget('hp9')" onkeydown="healKey(event)">
+							<div class="classColour shaman" id="hp9">
+								<div id="hp9overlay" class="overlay">
+								SHAMAN
+								<div id="lbl9" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="players" onmouseover="selectTarget('hp10')" onmouseleave="unselectTarget('hp10')" onkeydown="healKey(event)">
+							<div class="classColour paladin" id="hp10">
+								<div id="hp10overlay" class="overlay">
+								HEALER
+								<div id="lbl10" class="label">&nbsp;</div>
+								</div>
+							</div>
+						</div>
+					</div>
+						
+					<div class="lines" >
+						<div><span id="gameTime">Time: 0</span>
+						<span id="hps">HPS: 0</span>
+						<span id="dtps">DTPS: 0</span>
+						</div>
+					</div>
+				</div>
+			<canvas width="128" height="128" hidden=""></canvas>	
+			</div>
+		</div>		
+    </body>
+    <script>
+		var numPlayers = 10;
+		var minHealth = 3;
+		var maxHealth = 100;
+		var manaRegen = 0.95;
+        var mana = 100;
+		var maxMana = 100;
+		var gcdOverlayStyle = "background-color: rgba(50,50,50,0.5);";
+		var gcdCD = 0;
+		var spell1Name='';
+		var spell2Name='';
+		var spell3Name='';
+		var spell4Name='';
+		var spell5Name='';
+		var spell6Name='';
+		var spell2CD = 0;
+		var spell2MaxCD = 15;
+		var spell4CD = 0;
+		var spell4MaxCD = 120;
+		var spell4Effect = 0;
+		var spell5CD = 0;
+		var spell5MaxCD = 600;
+		var spell6CD = 0;
+		var spell6MaxCD = 180;
+		var spell6Effect = 0;
+		var critChance = 0.15;
+		
+		var minSpikeCD = 2;
+		var maxSpikeCD = 10;
+		
+		var gameTime = 0.0;
+		
+		var totalHealingDone = 0;
+		var totalDamageTaken = 0;
+		var maxBossHealth = 25000;
+		var bossHealth = maxBossHealth;
+		
+		var gameRunning = false
+        var gameOver = false;
+        var selectedTarget = '';
+				
+		var spike1CD = minSpikeCD;
+		var spike2CD = minSpikeCD*2;
+		
+		// These are controlled by the difficulty settings (LFR:-3 to MYTHIC:0)
+		var manaCost;
+		var minHeal;
+		var maxHeal;
+		var minTickDamage;
+		var maxTickDamage;
+		var largeHitMultiplier;
+		var largeHitChance;
+		
+		setupButtons();		
+		changeDifficulty();
+		
+        ticks = setInterval(gametick, 500);		
+		
+		document.addEventListener('keydown', function(event) {
+            x = event.code;
+			healKey(x);
+        });		
+		
+		function changeDifficulty()
+		{
+			var difficulty = document.getElementById("difficulty").value;
+			
+			minHeal = 6 - difficulty/2;
+			maxHeal = 12 - difficulty/2;
+			largeHitChance = 0.02 - difficulty/100;
+			
+			manaCost = 1.25 + difficulty/3;
+			minTickDamage = 4 + difficulty/2;
+			maxTickDamage = 6 + difficulty/2;
+			largeHitMultiplier = 5 + difficulty/3;
+			
+			
+			maxBossHealth = Math.abs(25000 / (difficulty/4-1));
+			bossHealth = maxBossHealth;
+		}
+		
+        function gametick(){
+			if (!gameRunning) return
+            gameTime += 0.5;
+			document.getElementById('gameTime').innerText = "Time: " + gameTime.toFixed(2);
+			
+			// GCD
+			if (gcdCD > 0){
+                gcdCD -= 1;
+				
+				if (gcdCD == 0) {
+					document.getElementById('spell1overlay').style = "";
+					document.getElementById('spell3overlay').style = "";
+				}
+            }
+			
+			// Spell Cooldowns
+			// 1: Holy Shock
+			if (spell2CD > 0){
+                spell2CD -= 0.5;
+                document.getElementById('spell2').innerText = spell2CD.toFixed(2);
+            }
+            else {
+                document.getElementById('spell2').innerText = spell2Name
+				if (gcdCD==0)document.getElementById('spell2overlay').style = "";
+            }
+			
+			// 4: Avenging Wrath
+			if (spell4Effect > 0){
+                spell4Effect -= 0.5;
+                document.getElementById('spell4').innerText = 'WRATH: ' + spell4Effect.toFixed(2);
+			}
+			else if (spell4CD > 0){
+                spell4CD -= 0.5;
+                document.getElementById('spell4').innerText = spell4CD.toFixed(2);
+            }
+            else {
+                document.getElementById('spell4').innerText = spell4Name;
+				if (gcdCD==0)document.getElementById('spell4overlay').style = "";
+            }
+			
+			// 5: Lay On Hands
+			if (spell5CD > 0){
+                spell5CD -= 0.5;
+                document.getElementById('spell5').innerText = spell5CD.toFixed(2);
+            }
+            else {
+                document.getElementById('spell5').innerText = spell5Name;
+				if (gcdCD==0)document.getElementById('spell5overlay').style = "";
+            }
+			
+			// 6: Aura Mastery
+			if (spell6Effect > 0){
+                spell6Effect -= 0.5;
+                document.getElementById('spell6').innerText = 'AURA: ' + spell6Effect.toFixed(2);
+			}
+			else if (spell6CD > 0){
+                spell6CD -= 0.5;
+                document.getElementById('spell6').innerText = spell6CD.toFixed(2);
+            }
+            else {
+                document.getElementById('spell6').innerText = spell6Name;
+				if (gcdCD==0)document.getElementById('spell6overlay').style = "";
+            }
+			
+			// Apply damage
+			// Always hit the tanks
+			if (Math.random() <= 0.6) damage(1, rnd(minTickDamage, maxTickDamage));
+			if (Math.random() <= 0.6) damage(2, rnd(minTickDamage, maxTickDamage));
+			
+			// Sometimes people make mistakes
+			if (Math.random() <= largeHitChance) {
+				damage(rnd(1, numPlayers), maxTickDamage*largeHitMultiplier);
+			}
+			
+			spike1CD -= 0.5;
+			spike2CD -= 0.5;
+						
+			// Spike 1: 2 large hits
+			if (spike1CD <= 0){
+				damage(rnd(1, numPlayers), maxTickDamage*largeHitMultiplier);
+				damage(rnd(1, numPlayers), maxTickDamage*largeHitMultiplier);
+				spike1CD = rnd(minSpikeCD, maxSpikeCD);
+            }
+			
+			// Spike 2: aoe hit
+			if (spike2CD <= 0){
+				for (var i = 0; i < numPlayers; i++)
+				{
+					damage(i+1, rnd(minTickDamage, maxTickDamage));
+				}
+				spike2CD = rnd(minSpikeCD, maxSpikeCD);
+            }
+			
+			// Alive DPS can damage the boss
+			for (var i = 1; i < numPlayers+1; i++)
+			{
+				playerHp = document.getElementById('hp'+i).offsetWidth;
+				if (playerHp > minHealth) {
+					bossHealth -= rnd(minTickDamage, maxTickDamage);
+				}
+			}
+				
+			// Health Checks
+            if (bossHealth <= minHealth){
+				stopGame('SUCCESS !!');
+			}
+			
+			// Update UI
+			updateBossHealth()
+            updateMana(manaRegen);
+            updateHPS();
+            updateDTPS();
+        }
+		
+		function stopGame(message){
+			gameOver = true;
+			clearInterval(ticks);
+			document.getElementById('finalPopup').style.display = "block";
+			document.getElementById('finalMessage').innerText = message;			
+			document.getElementById('backgroundVideo').pause();
+		}
+		
+		function pause(){
+			if (gameOver) return;
+			gameRunning = !gameRunning;
+			
+			var video = document.getElementById('backgroundVideo');
+			var info = document.getElementById('gameInfo');
+			var button = document.getElementById('pauseButton');
+			
+			if (gameRunning) {
+				video.play();
+				info.style = "display:none;";
+				button.innerText = "Pause";
+			}
+			else {
+				video.pause();
+				info.style = "display:block;";
+				button.innerText = "Play";
+			}
+		}
+		
+		function rnd(min, max){
+			return Math.floor(Math.random() * max) + min;
+		}		
+		
+		function unselectTarget(target){
+			document.getElementById(target+'overlay').style = "";
+			selectedTarget = null;
+		}
+		
+        function selectTarget(target){		
+            selectedTarget = target;
+			document.getElementById(target+'overlay').style = "background-color: rgba(255, 255, 255, 0.5);";
+        }
+		
+        function healClick(amount){
+			if (gcdCD > 0) return;
+			heal(selectedTarget, amount);
+        }
+		
+		function heal(target, amount){
+			if (gameOver || target == '' || mana <= 0 || !gameRunning) return;
+			
+			hp = document.getElementById(target).offsetWidth;
+			if (hp <= minHealth || hp >= maxHealth) return;
+			
+			updateMana(-manaCost);			
+			
+			// Avenging Wrath
+			if (spell4Effect > 0){
+				amount *= 1.2;
+			}
+			
+			// Heals can crit!
+			if (Math.random() <= critChance){
+				amount *= 2;
+			}
+			hp = hp + amount;			
+			
+			if (hp > maxHealth){
+				hp = maxHealth;
+			}
+			document.getElementById(target).style.width = hp + '%';
+			totalHealingDone += amount;
+			updateHPS();
+			
+			gcdCD = 2;
+			document.getElementById('spell1overlay').style = gcdOverlayStyle
+			document.getElementById('spell2overlay').style = gcdOverlayStyle
+			document.getElementById('spell3overlay').style = gcdOverlayStyle
+			document.getElementById('spell4overlay').style = gcdOverlayStyle
+			document.getElementById('spell5overlay').style = gcdOverlayStyle
+			document.getElementById('spell6overlay').style = gcdOverlayStyle
+
+		}
+		
+		function healKey(event){2
+			if (gameOver || selectedTarget == '' || gcdCD > 0 || !gameRunning) return;
+			// HOLY SHOCK
+			if (event == 'Digit1') {
+                if (spell2CD == 0){
+					healClick(rnd(30, 50));
+					spell2CD = spell2MaxCD;
+					document.getElementById('spell2').innerText = spell2CD;
+				}
+            }
+			// LIGHT OF DAWN (AOE)
+            else if (event == 'Digit2'){
+				healClick(rnd(minHeal, maxHeal));
+				updateMana(-manaCost);				
+				heal('hp' + rnd(1,numPlayers), rnd(minHeal, maxHeal));				
+				heal('hp' + rnd(1,numPlayers), rnd(minHeal, maxHeal));				
+				heal('hp' + rnd(1,numPlayers), rnd(minHeal, maxHeal));
+            }
+			// AVENGING WRATH
+            else if (event == 'KeyQ'){
+				if (spell4CD == 0){
+					updateMana(-manaCost);
+					critChance = 1.3 * 0.15;
+					spell4CD = spell4MaxCD;
+					spell4Effect = 20;
+				}
+            }
+			// LAY ON HANDS
+            else if (event == 'KeyE'){
+				if (spell5CD == 0){
+					updateMana(-manaCost);
+					spell5CD = spell5MaxCD;
+					heal(selectedTarget, maxHealth);
+				}
+            }
+			// AURA MASTERY
+            else if (event == 'KeyR'){
+				if (spell6CD == 0){
+					updateMana(-manaCost);
+					spell6CD = spell6MaxCD;
+					spell6Effect = 8;
+				}
+            }
+		}
+		
+        function damage(target, amount){
+			if (gameOver || !gameRunning) return;
+			
+            hp = document.getElementById('hp'+target).offsetWidth;
+			if (hp <= minHealth) return;
+			
+			// Aura Mastery
+			if (spell6Effect > 0){
+				amount /= 1.2;
+			}
+			
+			// Damage can crit!
+			if (Math.random() <= 0.15){
+				amount *= 2;
+			}
+			
+            hp = hp - amount;
+			totalDamageTaken += amount;
+			
+			if (hp <= minHealth){
+				hp = 0;
+				var elem = document.getElementById('lbl'+target)
+				elem.innerText = "*DEAD*"
+				if (target == 1 || target == 2 || target == 10) stopGame('WIPE IT !!');
+			}
+			
+            document.getElementById('hp'+target).style.width = hp + '%';
+        }
+
+		function updateBossHealth(){
+			if (gameOver || !gameRunning) return;
+			
+			hp = bossHealth / maxBossHealth * 100.0;				
+			document.getElementById('hpboss').style.width = hp + '%';
+			
+			if (bossHealth <= minHealth){
+				hp = 0;
+				var elem = document.getElementById('lblboss')
+				elem.innerText = "*DEAD*"
+			}
+		}
+		
+        function updateMana(change){  
+			if (gameOver || !gameRunning) return;
+			
+            mana = mana + change;
+            if (mana > maxMana){
+                mana = maxMana;
+            }
+			else if (mana < 0){
+				mana = 0;
+			}
+			
+            document.getElementById('mana').style.width = mana + '%';
+        }
+		
+		function updateDTPS(){
+            DTPS = totalDamageTaken / gameTime;
+            document.getElementById('dtps').innerText = "DTPS: " + DTPS.toFixed(2);;
+        }
+		
+		function updateHPS(){
+            HPS = totalHealingDone / gameTime;
+            document.getElementById('hps').innerText = "HPS: " + HPS.toFixed(2);;
+        }
+		
+		function setupButtons(){
+			spell1Name = document.getElementById('spell1').innerText;
+			spell2Name = document.getElementById('spell2').innerText;
+			spell3Name = document.getElementById('spell3').innerText;
+			spell4Name = document.getElementById('spell4').innerText;
+			spell5Name = document.getElementById('spell5').innerText;
+			spell6Name = document.getElementById('spell6').innerText;
+			
+			drawToImage('1', 'button2');
+			drawToImage('2', 'button3');
+			drawToImage('Q', 'button4');
+			drawToImage('E', 'button5');
+			drawToImage('R', 'button6');
+		}
+		
+		function drawToImage(number, image) {
+			const canvas = document.querySelector('canvas');
+			const ctx = canvas.getContext('2d');
+			ctx.textBaseline = 'middle';
+			ctx.textAlign = 'center';
+			ctx.font = '110px sans-serif';
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.fillStyle = 'black';
+			ctx.fillText(number, canvas.width / 2, canvas.height / 2, canvas.width);
+			const data = canvas.toDataURL('image/png');
+
+			const output = document.getElementById(image);
+			output.src = data;
+		}
+        
+    </script>
+</html>
