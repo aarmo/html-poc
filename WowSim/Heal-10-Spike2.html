@@ -185,6 +185,23 @@
 			   width:100%;
 			}
         </style>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+		<script type="text/javascript">
+			
+			window.onload=function(){
+				// Make the HTML5 input drop down list with a dataset move the value to "placeholder" so we can see all other options on click
+				$('input').on('click', function() {
+					$(this).attr('placeholder',$(this).val());
+				  $(this).val('');
+				});
+				$('input').on('mouseleave', function() {
+				  if ($(this).val() == '') {
+					$(this).val($(this).attr('placeholder'));
+				  }
+				});
+				
+			};
+		</script>
     </head>
     <body onclick="healClick(rnd(minHeal,maxHeal))">
 				
@@ -207,7 +224,19 @@
 				  <option value="-2" selected>NORMAL</option>
 				  <option value="-1">HEROIC</option>
 				  <option value="0">MYTHIC</option>
-				</select>
+				</select>&nbsp;
+				Gear:
+				<input id="gearScoreInput" list="gearScore" placeholder="100" style="width: 60px;" value="100" />
+				<datalist id="gearScore">
+				  <option value="80">LFR</option>
+				  <option value="90">LFR+</option>
+				  <option value="100">NORMAL</option>
+				  <option value="110">NORMAL+</option>
+				  <option value="120">HEROIC</option>
+				  <option value="130">HEROIC+</option>
+				  <option value="140">MYTHIC</option>
+				  <option value="150">MYTHIC+</option>
+				</datalist>
 			</div>
 			<div class="lines">
 				<button onclick="pause()" id="pauseButton">Play</button>
@@ -384,7 +413,6 @@
 		var numPlayers = 10;
 		var minHealth = 3;
 		var maxHealth = 100;
-		var manaRegen = 0.95;
         var mana = 100;
 		var maxMana = 100;
 		var gcdOverlayStyle = "background-color: rgba(50,50,50,0.5);";
@@ -424,41 +452,52 @@
 		var spike1CD = minSpikeCD;
 		var spike2CD = minSpikeCD*2;
 		
-		// These are controlled by the difficulty settings (LFR:-3 to MYTHIC:0)
-		var manaCost;
+		var manaCost = 1.25;
+		// These are controlled by the gear settings (LFR:60 to MYTHIC+:130)
+		var manaRegen;
 		var minHeal;
 		var maxHeal;
+		
+		// These are controlled by the difficulty settings (LFR:-3 to MYTHIC:0)
 		var minTickDamage;
 		var maxTickDamage;
 		var largeHitMultiplier;
 		var largeHitChance;
 		
-		setupButtons();		
+		setupButtons();
 		changeDifficulty();
+		changeGear();
 		
         ticks = setInterval(gametick, 500);		
 		
 		document.addEventListener('keydown', function(event) {
             x = event.code;
 			healKey(x);
-        });		
+        
+		});
 		
 		function changeDifficulty()
 		{
 			var difficulty = document.getElementById("difficulty").value;
 			
-			minHeal = 6 - difficulty/2;
-			maxHeal = 12 - difficulty/2;
 			largeHitChance = 0.02 - difficulty/100;
 			
-			manaCost = 1.25 + difficulty/3;
 			minTickDamage = 4 + difficulty/2;
 			maxTickDamage = 6 + difficulty/2;
-			largeHitMultiplier = 5 + difficulty/3;
-			
+			largeHitMultiplier = 5 + difficulty/3;			
 			
 			maxBossHealth = Math.abs(25000 / (difficulty/4-1));
 			bossHealth = maxBossHealth;
+		}
+		
+		function changeGear()
+		{		
+			var gearScore = document.getElementById("gearScoreInput").value;
+			var gearBuff = gearScore / 100.0;
+			
+			manaRegen = 0.95 * gearBuff;
+			minHeal = 8  * gearBuff;
+			maxHeal = 12  * gearBuff;
 		}
 		
         function gametick(){
@@ -581,6 +620,7 @@
 			document.getElementById('finalPopup').style.display = "block";
 			document.getElementById('finalMessage').innerText = message;			
 			document.getElementById('backgroundVideo').pause();
+			var info = document.getElementById('gameInfo').style = "display:block;";
 		}
 		
 		function pause(){
