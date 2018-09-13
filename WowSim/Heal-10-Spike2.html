@@ -201,6 +201,25 @@
 				});
 				
 			};
+			
+			(function($) {
+			$.QueryString = (function(paramsArray) {
+				let params = {};
+
+				for (let i = 0; i < paramsArray.length; ++i)
+				{
+					let param = paramsArray[i]
+						.split('=', 2);
+
+					if (param.length !== 2)
+						continue;
+
+					params[param[0]] = decodeURIComponent(param[1].replace(/\+/g, " "));
+				}
+
+				return params;
+			})(window.location.search.substr(1).split('&'))
+		})(jQuery);
 		</script>
     </head>
     <body onclick="healClick(rnd(minHeal,maxHeal))">
@@ -398,11 +417,13 @@
 						</div>
 					</div>
 						
-					<div class="lines" >
-						<div><span id="gameTime">Time: 0</span>
-						<span id="hps">HPS: 0</span>
-						<span id="dtps">DTPS: 0</span>
-						</div>
+						
+						
+					<div class="lines" style="position: fixed;bottom: 100;width: 100;color:white;">
+						<div id="gameTime">Time: 0</div>
+						<div id="hps">HPS: 0</div>
+						<div id="dps">DPS: 0</div>
+						<div id="dtps">DTPS: 0</div>
 					</div>
 				</div>
 			<canvas width="128" height="128" hidden=""></canvas>	
@@ -441,6 +462,7 @@
 		var gameTime = 0.0;
 		
 		var totalHealingDone = 0;
+		var totalDamageDone = 0;
 		var totalDamageTaken = 0;
 		var maxBossHealth = 25000;
 		var bossHealth = maxBossHealth;
@@ -464,9 +486,15 @@
 		var largeHitMultiplier;
 		var largeHitChance;
 		
+		var data = { difficulty: 0, gearScore: 0 };
+		
 		setupButtons();
 		changeDifficulty();
 		changeGear();
+		
+		//alert(JSON.stringify($.QueryString));
+		//alert($.param(data));
+		
 		
         ticks = setInterval(gametick, 500);		
 		
@@ -476,26 +504,28 @@
         
 		});
 		
+		
+		
 		function changeDifficulty()
 		{
-			var difficulty = document.getElementById("difficulty").value;
+			data.difficulty = document.getElementById("difficulty").value;
 			
-			largeHitChance = 0.02 - difficulty/100;
+			largeHitChance = 0.02 - data.difficulty/100;
 			
-			minTickDamage = 4 + difficulty/2;
-			maxTickDamage = 6 + difficulty/2;
-			largeHitMultiplier = 5 + difficulty/3;			
+			minTickDamage = 4 + data.difficulty/2;
+			maxTickDamage = 6 + data.difficulty/2;
+			largeHitMultiplier = 5 + data.difficulty/3;			
 			
-			maxBossHealth = Math.abs(25000 / (difficulty/4-1));
+			maxBossHealth = Math.abs(25000 / (data.difficulty/4-1));
 			bossHealth = maxBossHealth;
 		}
 		
 		function changeGear()
 		{		
-			var gearScore = document.getElementById("gearScoreInput").value;
-			var gearBuff = gearScore / 100.0;
+			data.gearScore = document.getElementById("gearScoreInput").value;
+			var gearBuff = data.gearScore / 90.0;
 			
-			manaRegen = 0.95 * gearBuff;
+			manaRegen = Math.min(0.95, 0.95 * gearBuff);
 			minHeal = 8  * gearBuff;
 			maxHeal = 12  * gearBuff;
 		}
@@ -598,7 +628,12 @@
 			{
 				playerHp = document.getElementById('hp'+i).offsetWidth;
 				if (playerHp > minHealth) {
-					bossHealth -= rnd(minTickDamage, maxTickDamage);
+					var amount = rnd(minTickDamage, maxTickDamage)
+					if (Math.random() <= critChance){
+						amount *= 2;
+					}
+					totalDamageDone += amount;
+					bossHealth -= amount;
 				}
 			}
 				
@@ -610,8 +645,7 @@
 			// Update UI
 			updateBossHealth()
             updateMana(manaRegen);
-            updateHPS();
-            updateDTPS();
+            updateStats();
         }
 		
 		function stopGame(message){
@@ -799,14 +833,16 @@
             document.getElementById('mana').style.width = mana + '%';
         }
 		
-		function updateDTPS(){
+		function updateStats(){
+            HPS = totalHealingDone / gameTime;
+            document.getElementById('hps').innerText = "HPS: " + HPS.toFixed(2);
+            DPS = totalDamageDone / gameTime;
+            document.getElementById('dps').innerText = "DPS: " + DPS.toFixed(2);
             DTPS = totalDamageTaken / gameTime;
-            document.getElementById('dtps').innerText = "DTPS: " + DTPS.toFixed(2);;
+            document.getElementById('dtps').innerText = "DTPS: " + DTPS.toFixed(2);
         }
 		
 		function updateHPS(){
-            HPS = totalHealingDone / gameTime;
-            document.getElementById('hps').innerText = "HPS: " + HPS.toFixed(2);;
         }
 		
 		function setupButtons(){
